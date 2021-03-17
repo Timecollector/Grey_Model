@@ -1,0 +1,131 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+import cum_fuc
+
+'''
+目前定义了两个函数，一个是grey_model，也就是传统的GM(1,1)的均值形式
+另一个是基于均值形式的滚动模型roll_gm
+'''
+
+# data = np.array([6,20,40,25,40,45,35,21,14,18,15.5,17,15])
+# time = np.arange(len(data))
+
+
+def grey_model(data,time,predict_step=3):
+    data_cum = np.cumsum(data)#累加
+    Y = data.reshape(len(data),1)[1:]
+    data_cum_z = []
+    for i in range(1,len(data_cum)):
+        z = 0.5* (data_cum[i]+data_cum[i-1])
+        data_cum_z.append(z)#使用均值形式
+    data_cum_z = np.array(data_cum_z)
+    B1 = -data_cum_z.reshape(len(data_cum_z),1)
+    B2 = np.ones(len(data_cum)-1).reshape(len(data_cum)-1,1)#生成一个列向量，元素都是1
+    B = np.hstack((B1,B2))
+
+    #用最小二乘求解a，b
+    coff = np.matmul(np.linalg.inv(np.matmul(B.T,B)),np.matmul(B.T,Y))
+    a, b = coff[0][0], coff[1][0]
+    print('a={0},b={1}'.format(a,b))
+
+    #模拟真实值
+    simulate_val = []
+    simulate_val.append(data[0])
+    for i in range(2,len(data_cum)+1):#从第二期开始模拟
+        x = (1-np.exp(a))*(data[0]-b/a)*np.exp(-a*(i-1))
+        simulate_val.append(x)
+    print('模拟值是： {0}'.format(simulate_val))
+
+    #预测
+    predict_val = []
+    for i in range(len(data_cum)+1,len(data_cum)+predict_step+1):
+        x = (1 - np.exp(a)) * (data[0] - b / a) * np.exp(-a * (i - 1))
+        predict_val.append(x)
+    print('预测值是： {0}'.format(predict_val))
+
+    simulate_val_all = simulate_val + predict_val
+
+    #误差计算
+    #残差
+    residual = data - simulate_val
+    relative_error = []
+    #相对误差
+    for i in range(len(data)):
+        x = abs(residual[i])/data[i]
+        relative_error.append(x)
+    print('残差是： {}'.format(residual))
+    print('相对误差是： {}'.format(relative_error))
+
+    #画图
+    plt.plot(simulate_val_all,label='simulate value')
+    plt.plot(data,label='real value')
+    plt.vlines(time[-1],0,max(data),label='predict value')
+    plt.xlabel('time')
+    plt.ylabel('cases')
+    plt.legend()
+    plt.show()
+
+
+
+
+def roll_gm(data,roll_step=4,predict_step=1):
+    #数据预处理
+    data = data.reshape(1,len(data))
+    data1 = [x for y in data for x in y]#用于画图
+    data = [x for y in data for x in y]#降维
+
+    data = tf.data.Dataset.from_tensor_slices(data)
+    data = data.window(roll_step, shift=1, drop_remainder=True)
+    data = data.flat_map(lambda window: window.batch(roll_step))
+
+    count = 0#增加一个计数器，用于记录迭代次数
+    a = []
+    b = []
+    predict_value = []
+    simulate_value = []
+    for item in data:
+        item = np.array(item)#把列表转化为np.array
+        data_cum = cum_fuc.weighted_cum(item)  # 累加
+        Y = item.reshape(len(item), 1)[1:]
+        data_cum_z = []
+        for i in range(1, len(data_cum)):
+            z = 0.5 * (data_cum[i] + data_cum[i - 1])
+            data_cum_z.append(z)  # 使用均值形式
+        data_cum_z = np.array(data_cum_z)
+        B1 = -data_cum_z.reshape(len(data_cum_z), 1)
+        B2 = np.ones(len(data_cum) - 1).reshape(len(data_cum) - 1, 1)  # 生成一个列向量，元素都是1
+        B = np.hstack((B1, B2))
+
+        # 用最小二乘求解a，b,把每一次循环的系数保存到列表中
+        coff = np.matmul(np.linalg.inv(np.matmul(B.T, B)), np.matmul(B.T, Y))
+        a.append(coff[0][0])
+        b.append(coff[1][0])
+
+        for i in range(len(data_cum) + 1, len(data_cum) + predict_step+1):
+            x = (1 - np.exp(a[count])) * (item[0] - b[count] / a[count]) * np.exp(-a[count] * (i - 1))#用count获取a，b
+            predict_value.append(x)
+        count += 1
+
+    # 误差计算
+    # 残差
+    residual = []
+    data_cal = data1[roll_step:]
+    for i in range(len(data_cal)):
+        x = data_cal[i] - predict_value[i]
+        residual.append(x)
+    relative_error = []
+    # 相对误差
+    for i in range(len(data_cal)):
+        x = abs(residual[i]) / data_cal[i]
+        relative_error.append(x)
+    print('残差是： {}'.format(residual))
+    print('相对误差是： {}'.format(relative_error))
+
+
+    plt.plot(predict_value,label='predict value')
+    plt.plot(data1[roll_step:],label='real value')
+    plt.xlabel('time')
+    plt.ylabel('cases')
+    plt.legend()
+    plt.show()
