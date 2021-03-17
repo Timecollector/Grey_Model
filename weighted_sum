@@ -1,0 +1,18 @@
+import numpy as np
+
+
+# data = np.array([6,20,40,25,40,45,35,21,14,18,15.5,17,15])
+
+def weighted_cum(data):
+    data_list = data.tolist()
+    data_edit = []
+    i = 3
+    for item in data_list:
+        item = item*5.7/i
+        i += 1
+        data_edit.append(item)
+    data_edit_array =np.array(data_edit)
+    data_edit_array_cum = np.cumsum(data_edit_array)
+    return data_edit_array_cum
+
+# weighted_cum(data)
