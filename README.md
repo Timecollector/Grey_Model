@@ -1,0 +1,3 @@
+# Grey_Model
+暂时只做了基于均值生成的GM（1,1）模型和基于此模型的滚动GM（1，1）模型
+roll_gm中的累加生成采用的是cum_fuc中的加权生成，如果不需要加权的话可以直接用numpy自带的cumsum代替weighted_sum
