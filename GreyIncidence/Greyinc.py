@@ -34,16 +34,3 @@ def gery_inci(var1,var2,alpha=0.8):
             print(inc)
             inc_mat[i,m] = inc
     return inc_mat
-
-
-
-
-if __name__ == '__main__':
-    data_mic = pd.read_excel('C:\\Users\\ZhangYiFan\\Desktop\\2021年中国研究生数学建模竞赛赛题\\2021年D题\\MIC.xlsx')
-    data_in = pd.read_excel('C:\\Users\\ZhangYiFan\\Desktop\\2021年中国研究生数学建模竞赛赛题\\2021年D题\\Molecular_Descriptor.xlsx')
-    data_out = pd.read_excel('C:\\Users\\ZhangYiFan\\Desktop\\2021年中国研究生数学建模竞赛赛题\\2021年D题\\ERα_activity.xlsx')
-    data_in = data_in[data_mic['Variable'][data_mic['MIC'] > 0.1]]
-    data_in = mean_process(data_in)
-    data_out = mean_process(data_out.iloc[:, 1:])
-    a = gery_inci(data_in, data_in)
-    sns.heatmap(a)
