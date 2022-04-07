@@ -50,14 +50,15 @@ predict_values = model.predict()
 ```
 
 - **灰色多变量预测模型**
-  - 更新了GM(1,N)模型
+  - 更新了GM(1,N)模型,建议使用连续型情况的，离散形式的我自己做的时候发现拟合误差比较大，后面应该需要使用另外一种离散模式
+  - 参数解释可以通过`model.__doc__`查看
   ```
   使用方法：
   data = pd.read_excel('Power.xlsx', sheet_name='Sheet3',header=None)
   system_data = data.iloc[:, 0]
   relevent_data = data.iloc[:, 1:]
 
-  model = gm1n(relevent_data, system_data,predict_step=3,discrete=True)
+  model = gm1n(relevent_data, system_data,predict_step=3,discrete=False)
   fit_values = model.fit()
   predict_values = model.predict()
   ```
