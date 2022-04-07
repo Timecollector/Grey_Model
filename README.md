@@ -50,7 +50,17 @@ predict_values = model.predict()
 ```
 
 - **灰色多变量预测模型**
-  - 更新了GM(1,N)的拟合部分，预测部分有空写完上传
+  - 更新了GM(1,N)模型
+  ```
+  使用方法：
+  data = pd.read_excel('Power.xlsx', sheet_name='Sheet3',header=None)
+  system_data = data.iloc[:, 0]
+  relevent_data = data.iloc[:, 1:]
+
+  model = gm1n(relevent_data, system_data,predict_step=3,discrete=True)
+  fit_values = model.fit()
+  predict_values = model.predict()
+  ```
 
 
 - **灰色多变量幂模型**
