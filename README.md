@@ -62,6 +62,7 @@ predict_values = model.predict()
   fit_values = model.fit()
   predict_values = model.predict()
   ```
+  - 在使用灰色多变量模型进行预测时，相关因素序列应该比系统因素序列长predict_step，可以看Power.xlsx中Sheet3表格示例数据，其中第一列是系统行为变量，第二第三列是相关因素
 
 
 - **灰色多变量幂模型**
